@@ -1,4 +1,4 @@
-import { Container} from './App.styled';
+import { Container } from './App.styled';
 import Searchbar from './Searchbar/Searchbar';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
@@ -23,7 +23,7 @@ async function fetchImages(query, page) {
     },
   });
 
-return response.data;
+  return response.data;
 }
 
 class App extends Component {
@@ -34,22 +34,25 @@ class App extends Component {
     page: 1,
     totalPages: 0,
   };
- async componentDidUpdate(prevProps, prevState) {
+  async componentDidUpdate(prevProps, prevState) {
     if (prevState.q !== this.state.q || prevState.page !== this.state.page) {
       this.setState({ loading: true });
-      fetchImages(this.state.q, this.state.page)
-        .then(images => {
-          if (images.hits.length > 0) {
-            this.setState(prevState => ({
-              images: [...prevState.images, ...images.hits],  
-              totalPages: Math.ceil(images.totalHits/12),
-            }));
-          } else {
-            toast("We couldn't find anything. Try something else.");
-            return;
-          }
-        })
-        .finally(this.setState({loading: false,}));
+      try {
+        const images = await fetchImages(this.state.q, this.state.page);
+        if (images.hits.length > 0) {
+          this.setState(prevState => ({
+            images: [...prevState.images, ...images.hits],
+            totalPages: Math.ceil(images.totalHits / 12),
+          }));
+        } else {
+          toast("We couldn't find anything. Try something else.");
+          return;
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.setState({ loading: false });
+      }
     }
   }
   loadMore = () => {
@@ -71,17 +74,18 @@ class App extends Component {
         <Container>
           <Searchbar onSubmit={this.submitHandler} />
           {loading && <Loader onLoading={loading} />}
-          </Container>
-          {images.length > 0 && (
-          <Container> 
-          <ImageGallery responseData={images} />
-              {loading ? (
-          <Loader onLoading={loading} />  
-        ) : (
-         (totalPages>1 && totalPages!==page) && <LoadButton onClick={this.loadMore} />
-        )}
         </Container>
-          )}
+        {images.length > 0 && (
+          <Container>
+            <ImageGallery responseData={images} />
+            {loading ? (
+              <Loader onLoading={loading} />
+            ) : (
+              totalPages > 1 &&
+              totalPages !== page && <LoadButton onClick={this.loadMore} />
+            )}
+          </Container>
+        )}
         <ToastContainer
           position="top-right"
           autoClose={3000}
