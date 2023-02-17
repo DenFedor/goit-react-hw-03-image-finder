@@ -1,6 +1,5 @@
 import { Container} from './App.styled';
 import Searchbar from './Searchbar/Searchbar';
-import Modal from './Modal/Modal';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import { Loader } from './Loader/Loader';
@@ -56,6 +55,7 @@ class App extends Component {
   loadMore = () => {
     this.setState(prevState => ({
       page: prevState.page + 1,
+      loading: true,
     }));
   };
   submitHandler = data => {
